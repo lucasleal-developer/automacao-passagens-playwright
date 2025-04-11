@@ -1,4 +1,5 @@
 import asyncio
+# Test commit to verify GitHub connection
 from playwright.async_api import async_playwright, expect
 import os # Importar os para path do screenshot
 from datetime import datetime # Importar datetime para nome único
@@ -145,22 +146,41 @@ async def run():
             return
 
         # --- Poltrona VOLTA (Número 15) ---
+        # Esta seção precisa ser implementada após confirmar a poltrona IDA
+        # O fluxo exato (vai para o mapa de volta? Pede para escolher passagem de volta?) precisa ser determinado
         try:
             print("Selecionando poltrona 15 (VOLTA)...")
-            # Esperar pela seção/mapa de volta
-            mapa_assentos_volta_locator = page.locator(':text("Escolha sua poltrona de volta"), .seatmap-return, .seats-trip--return, .trip-seats__container >> nth=1, .seat-list-wrapper >> nth=1').first
+            # Esperar pela seção/mapa de volta (AJUSTE O SELETOR CONFORME NECESSÁRIO)
+            mapa_assentos_volta_locator = page.locator(':text("Escolha sua poltrona de volta"), .seatmap-return, .seats-trip--return, #trecho .onibus.VOLTA').first # Adicionado seletor similar ao IDA
+            print(f"Esperando pelo container/título do mapa VOLTA...")
             await expect(mapa_assentos_volta_locator).to_be_visible(timeout=60000) # Aumentar timeout
             print("Mapa de assentos VOLTA visível.")
 
-            poltrona_volta_locator = page.locator('.seat-available:not(.seat-disabled)')
-            poltrona_15 = poltrona_volta_locator.locator('text="15"').first
-            await expect(poltrona_15).to_be_visible(timeout=15000)
-            print("Poltrona 15 encontrada.")
-            await poltrona_15.click()
-            print("Poltrona 15 selecionada.")
+            # Encontrar poltrona 15 (mesma lógica da IDA, mas dentro do mapa de VOLTA)
+            poltrona_volta_map_container = mapa_assentos_volta_locator # Assumindo que o locator acima é o container
+            # Se o locator for apenas um título, precisaremos de um seletor para o container real
+            # Ex: poltrona_volta_map_container = page.locator('#trecho .onibus.VOLTA').first OU similar
 
-            # Botão Confirmar
-            # Pode ser o mesmo botão ou um diferente, o seletor tenta cobrir opções
+            poltrona_15_locator = poltrona_volta_map_container.locator('text=15')
+
+            print("Procurando pela poltrona 15 visível...")
+            await expect(poltrona_15_locator).to_be_visible(timeout=15000)
+            print("Poltrona 15 encontrada.")
+            await poltrona_15_locator.scroll_into_view_if_needed() # Garante visibilidade
+
+            is_disabled_or_occupied_volta = await poltrona_15_locator.evaluate('''
+                element => { /* Mesma função JS da IDA */ }
+            ''') # Simplificado aqui, mas use a mesma função JS
+
+            if is_disabled_or_occupied_volta:
+                 raise Exception("Poltrona 15 encontrada, mas parece estar desabilitada ou ocupada.")
+            else:
+                print("Poltrona 15 parece estar disponível. Clicando...")
+                await poltrona_15_locator.click()
+                print("Poltrona 15 selecionada.")
+
+
+            # Botão Confirmar (AJUSTE O SELETOR CONFORME NECESSÁRIO)
             confirmar_volta_button = page.locator('button:text-matches("Confirmar", "i"), button:has-text("Prosseguir"), button:has-text("Avançar"), button:has-text("Confirmar poltrona")').first
             await expect(confirmar_volta_button).to_be_enabled(timeout=15000)
             await confirmar_volta_button.click()
