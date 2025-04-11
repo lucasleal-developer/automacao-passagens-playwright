@@ -1,0 +1,9 @@
+# Pasta de screenshots
+screenshots/
+
+# Arquivos compilados do Python
+*.pyc
+__pycache__/
+
+# Variáveis de ambiente
+.env* 
